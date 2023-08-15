@@ -1,0 +1,25 @@
+FROM rocker/shiny
+# Copy your Shiny app code to the container
+COPY server.R /srv/shiny-server/
+COPY ui.R /srv/shiny-server/
+COPY app.R /srv/shiny-server/
+COPY ./Data /srv/shiny-server/Data
+COPY ./Model /srv/shiny-server/Model
+# Install required packages for using self-signed certificates and Nginx
+RUN apt-get update && \
+    apt-get install -y openssl nginx
+
+# Copy the self-signed SSL certificate and private key to the container
+COPY certificate.crt /etc/nginx/ssl/certificate.crt
+COPY private.key /etc/nginx/ssl/private.key
+
+# Configure Nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port 80 for HTTP and 443 for HTTPS
+EXPOSE 80
+EXPOSE 443
+# Install R packagesgenerics’
+RUN R -e "install.packages(c('shiny','DT','shinydashboard','sparkline','plotly','ggplot2'))"
+# Run Nginx and Shiny app
+CMD service nginx start && R -e "shiny::runApp('/srv/shiny-server', host = '0.0.0.0', port = 3838, launch.browser = FALSE)"
