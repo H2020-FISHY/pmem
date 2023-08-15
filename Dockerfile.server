@@ -1,0 +1,13 @@
+FROM rocker/shiny
+COPY pmem.sh /srv/shiny-server/
+RUN chmod +x /srv/shiny-server/pmem.sh
+COPY pmem_backend.R /srv/shiny-server/
+
+COPY ./Data /srv/shiny-server/Data
+COPY ./Model /srv/shiny-server/Model
+
+# Install R packagesgenerics’
+RUN R -e "install.packages(c('readr', 'dplyr','tidyverse','mlr3','mlr3viz','mlr3verse','mlr3tuning','mlr3learners','mlr3fselect','e1071','caret'))"
+RUN R -e "install.packages(c('flexdashboard','shinydashboard', 'sparkline', 'httr','jsonlite','data.table','rvest','magrittr','XML','tidyverse','shiny'))"
+
+CMD ["/bin/bash", "/srv/shiny-server/pmem.sh"]
